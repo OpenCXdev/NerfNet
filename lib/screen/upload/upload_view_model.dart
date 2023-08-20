@@ -3,42 +3,54 @@ import 'dart:io';
 import 'package:cognitivestudio/repository/firebase_repository.dart';
 import 'package:cognitivestudio/repository/firestore_path.dart';
 import 'package:cognitivestudio/riverpod/firebase_provider.dart';
+import 'package:file_picker/_internal/file_picker_web.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 class UploadViewModel extends ChangeNotifier {
   UploadViewModel(
     this.firebaseRepository,
   );
   final FirebaseRepository firebaseRepository;
-  final ImagePicker _picker = ImagePicker();
+  // final ImagePicker _picker = ImagePicker();
+  List<PlatformFile> dataset = List.empty();
   // XFile? image;
-  File? image;
-  Uint8List? webImage;
+  // File? image;
+  // Uint8List? webImage;
 
   Future uploadImage() async {
-    print(image);
-    print(image!.path);
-    if (image != null) {
+    if (dataset.isNotEmpty) {
       // if (kIsWeb) {
-      webImage = await image!.readAsBytes();
       print('got web');
-      await firebaseRepository.uploadImage(
-          path: FirebaseStoragePath.dataset(DateTime.now().toString()),
-          fileAsBytes: webImage!);
-      // } else {
-      //   // osImage = File(image!.path);
-      //   await firebaseRepository.uploadImage(
-      //       path: FirebaseStoragePath.dataset(DateTime.now().toString()), image: image);
-      // }
+      await firebaseRepository.uploadFiles(
+          storageBucketPath:
+              FirebaseStoragePath.datasetBucket(DateTime.now().toString()),
+          files: dataset);
     }
   }
 
-  // select Image
-  Future selectImage() async {
-    final selectedimage = await _picker.pickImage(source: ImageSource.gallery);
-    image = File(selectedimage!.path);
+  Future<void> pickMultipleFile() async {
+    FilePickerResult? pickedFiles;
+    if (kIsWeb) {
+      // TODO make enum for extensions
+      pickedFiles = await FilePickerWeb.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'png', 'mp4'],
+      );
+    } else {
+      pickedFiles = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'png', 'mp4'],
+      );
+    }
+    if (pickedFiles != null) {
+      dataset = pickedFiles.files;
+      print(dataset);
+    }
     notifyListeners();
   }
 }
@@ -49,29 +61,3 @@ final uploadViewModelProvider =
   final uploadViewModel = UploadViewModel(firebaseRepository);
   return uploadViewModel;
 });
-
-// Future imgFromGallery() async {
-//   final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-//   setState(() {
-//     if (pickedFile != null) {
-//       _photo = File(pickedFile.path);
-//       uploadFile();
-//     } else {
-//       print('No image selected.');
-//     }
-//   });
-// }
-
-// Future imgFromCamera() async {
-//   final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-
-//   setState(() {
-//     if (pickedFile != null) {
-//       _photo = File(pickedFile.path);
-//       uploadFile();
-//     } else {
-//       print('No image selected.');
-//     }
-//   });
-// }

@@ -9,5 +9,5 @@ class FirestoreDocPath {
 // }
 
 class FirebaseStoragePath {
-  static String dataset(String queryId) => 'dataset/$queryId';
+  static String datasetBucket(String queryId) => 'datasets/$queryId';
 }

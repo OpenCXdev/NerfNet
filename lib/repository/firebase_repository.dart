@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseRepository {
@@ -48,12 +50,35 @@ class FirebaseRepository {
     await reference.update(data);
   }
 
-  Future<void> uploadImage({
-    required String path,
-    required dynamic fileAsBytes,
-  }) async {
-    final reference = storage.ref(path);
-    await reference.putData(fileAsBytes);
+  // Future<void> uploadImage({
+  //   required String path,
+  //   required dynamic fileAsBytes,
+  // }) async {
+  //   final reference = storage.ref().child(path);
+  //   await reference.putFile(fileAsBytes);
+  // }
+
+  Future<String>? uploadFile(
+      {required String path, required Uint8List imageAsBytes}) async {
+    try {
+      final reference = storage.ref().child(path);
+      await reference.putData(imageAsBytes);
+      return await reference.getDownloadURL();
+    } catch (error) {
+      print('Error uploading image $path');
+    }
+    return Future<String>.value(null);
+  }
+
+  Future<void> uploadFiles(
+      {required String storageBucketPath,
+      required List<PlatformFile> files}) async {
+    for (int i = 0; i < files.length; i++) {
+      String imagePath = "$storageBucketPath/${files[i].name}";
+      final url =
+          await uploadFile(path: imagePath, imageAsBytes: files[i].bytes!);
+      print('$url \n');
+    }
   }
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> docSnapshots({

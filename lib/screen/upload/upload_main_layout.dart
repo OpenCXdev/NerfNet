@@ -11,13 +11,12 @@ class UploadMainLayout extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(uploadViewModelProvider);
-    return Center(
-        child: Wrap(children: <Widget>[
+    return Column(children: <Widget>[
       ListTile(
           leading: const Icon(Icons.photo_library),
           title: const Text('Gallery'),
           onTap: () async {
-            await viewModel.selectImage();
+            await viewModel.pickMultipleFile();
             // Navigator.of(context).pop();
           }),
       ListTile(
@@ -27,12 +26,36 @@ class UploadMainLayout extends HookConsumerWidget {
             await viewModel.uploadImage();
             // Navigator.of(context).pop();
           }),
-      Center(
-          child: viewModel.image != null
-              ? kIsWeb
-                  ? Image.network(viewModel.image!.path)
-                  : Image.file(File(viewModel.image!.path))
-              : const Text('Nothing selected'))
-    ]));
+      Expanded(
+        flex: 8,
+        child: viewModel.dataset.isEmpty
+            ? const Text('Nothing selected')
+            : Row(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        // shrinkWrap: true,
+                        itemCount: viewModel.dataset.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                              ),
+                              child: kIsWeb
+                                  ? Image.memory(
+                                      viewModel.dataset[index].bytes!,
+                                      height: 0.3 *
+                                          MediaQuery.of(context).size.height,
+                                      scale: 0.5,
+                                    )
+                                  : Image.file(
+                                      File(viewModel.dataset[index].path!)));
+                        }),
+                  ),
+                ],
+              ),
+      )
+    ]);
   }
 }
