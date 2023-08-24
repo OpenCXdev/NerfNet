@@ -9,9 +9,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from subprocess import check_call, Popen
 
-import backoff
-from firebase_admin import credentials, initialize_app, firestore
-
 ROOT = Path("/tmp")
 
 
@@ -117,16 +114,5 @@ class Runner:
         return proc
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--cred", default="cred.json", help="Path to firebase credentials.")
-    parser.add_argument("--db", help="Firestore database ID.")
-    args = parser.parse_args()
-
-    cred = credentials.Certificate(args.cred)
-    initialize_app(cred, {"databaseURL": f"https://{args.db}.firebaseio.com"})
-    db = firestore.client()
-
-
 if __name__ == "__main__":
-    main()
+    pass
