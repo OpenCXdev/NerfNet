@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "871037032513",
+    "firebase_url": "https://cognitivestudio-3119e-default-rtdb.firebaseio.com",
+    "project_id": "cognitivestudio-3119e",
+    "storage_bucket": "cognitivestudio-3119e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871037032513:android:4a32ac6030dfe118190ec0",
+        "android_client_info": {
+          "package_name": "com.example.cognitivestudio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "871037032513-0m5djp8e9mqries8i2rb9adpj300e39r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVaoaC6HwTCO8KJWa7PS7x-33i_TURpyQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "871037032513-0m5djp8e9mqries8i2rb9adpj300e39r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "871037032513-4e2ljb3ob2ani705am3t87vjh892dq1u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cognitivestudio.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
