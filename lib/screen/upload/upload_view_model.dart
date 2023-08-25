@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:cognitivestudio/model/query/query.dart';
+import 'package:cognitivestudio/model/utils/enums.dart';
 import 'package:cognitivestudio/repository/firebase_repository.dart';
 import 'package:cognitivestudio/repository/firestore_path.dart';
 import 'package:cognitivestudio/riverpod/firebase_provider.dart';
@@ -14,21 +16,46 @@ class UploadViewModel extends ChangeNotifier {
     this.firebaseRepository,
   );
   final FirebaseRepository firebaseRepository;
-  // final ImagePicker _picker = ImagePicker();
   List<PlatformFile> dataset = List.empty();
-  // XFile? image;
-  // File? image;
-  // Uint8List? webImage;
+  NerfModel selectedModel = NerfModel.instantNGP;
+  ExportType selectedExportType = ExportType.images;
 
-  Future uploadImage() async {
+  void setNerfModel(NerfModel? modelType) {
+    selectedModel = modelType ?? NerfModel.instantNGP;
+    notifyListeners();
+  }
+
+  void setExportType(ExportType? exportType) {
+    selectedExportType = exportType ?? ExportType.images;
+    notifyListeners();
+  }
+
+  Future uploadQuery(DateTime timestamp) async {
+    Query query = Query.fromJson({
+      'nerfModel': selectedModel.name,
+      'exportOption': selectedExportType.name,
+      'timestamp': timestamp.toString(),
+    });
+    await firebaseRepository.setData(
+        path: FirestoreDocPath.query(timestamp.toString()),
+        data: query.toJson());
+  }
+
+  Future uploadImage(DateTime timestamp) async {
     if (dataset.isNotEmpty) {
       // if (kIsWeb) {
-      print('got web');
+      // print('got web');
       await firebaseRepository.uploadFiles(
           storageBucketPath:
-              FirebaseStoragePath.datasetBucket(DateTime.now().toString()),
+              FirebaseStoragePath.datasetBucket(timestamp.toString()),
           files: dataset);
     }
+  }
+
+  Future uploadJob() async {
+    final currentTimestamp = DateTime.now();
+    await uploadQuery(currentTimestamp);
+    await uploadImage(currentTimestamp);
   }
 
   Future<void> pickMultipleFile() async {

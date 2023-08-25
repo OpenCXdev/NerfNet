@@ -45,19 +45,20 @@ dependencies:
   riverpod: ^2.3.7 
   flutter_riverpod: ^2.3.7 
   logger: ^1.1.0
-  freezed_annotation: ^1.0.0
+  freezed_annotation: ^2.4.1
   firebase_core_platform_interface: ^4.8.0
   routemaster: ^0.9.5
   image_picker: ^1.0.2
   file_picker: ^5.3.3
   open_app_file: ^4.0.2
+  json_annotation: ^4.8.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  build_runner: ^2.1.5
-  freezed: ^1.0.2+1
+  build_runner: ^2.4.6
+  freezed: ^2.4.2 
   json_serializable: ^6.1.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
