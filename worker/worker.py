@@ -3,7 +3,6 @@ Runs on GPU server.
 Picks up run request from firebase function.
 """
 
-import argparse
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -112,6 +111,37 @@ class Runner:
             "--viewer.websocket-port", str(port),
         ])
         return proc
+
+
+FAST_METHODS = (
+    "nerfacto",
+    "instant-ngp",
+)
+
+MAX_ITERS = 100000
+
+
+def verify_config(config: RunConfig) -> str | None:
+    """
+    Verifies that a run config is valid.
+
+    Return:
+        None if valid.
+        str message if invalid.
+    """
+    # Verify data paths.
+    if not config.raw_data.exists():
+        return f"raw_data path {config.raw_data} does not exist."
+
+    # Make sure method is fast; don't want to clog resources.
+    if config.method not in FAST_METHODS:
+        return f"method {config.method} is not fast enough."
+
+    # Sane number of iterations.
+    if config.iters > MAX_ITERS:
+        return f"iters {config.iters} is too high."
+
+    return None
 
 
 if __name__ == "__main__":
