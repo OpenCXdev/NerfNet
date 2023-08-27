@@ -49,7 +49,7 @@ class UploadMainLayout extends HookConsumerWidget {
       ),
       ListTile(
           leading: const Icon(Icons.photo_library),
-          title: const Text('Gallery'),
+          title: const Text('Select Images/Video'),
           onTap: () async {
             await viewModel.pickMultipleFile();
             // Navigator.of(context).pop();

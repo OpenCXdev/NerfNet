@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cognitivestudio/model/query/query.dart';
 import 'package:cognitivestudio/model/utils/enums.dart';
 import 'package:cognitivestudio/repository/firebase_repository.dart';
@@ -8,7 +6,6 @@ import 'package:cognitivestudio/riverpod/firebase_provider.dart';
 import 'package:file_picker/_internal/file_picker_web.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 
 class UploadViewModel extends ChangeNotifier {
@@ -43,8 +40,6 @@ class UploadViewModel extends ChangeNotifier {
 
   Future uploadImage(DateTime timestamp) async {
     if (dataset.isNotEmpty) {
-      // if (kIsWeb) {
-      // print('got web');
       await firebaseRepository.uploadFiles(
           storageBucketPath:
               FirebaseStoragePath.datasetBucket(timestamp.toString()),
