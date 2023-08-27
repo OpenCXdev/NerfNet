@@ -10,7 +10,7 @@ class UploadScreen extends HookWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CognitiveStudio'),
+        title: const Text('NeRF Net'),
       ),
       body: const UploadMainLayout(),
     );
