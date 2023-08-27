@@ -10,6 +10,7 @@ from fake_users_db import fake_users_db
 from database import upload_files_to_firebase_storage 
 import secrets
 import queue
+from fastapi.middleware.cors import CORSMiddleware
 
 SECRET_KEY = secrets.token_urlsafe(32)
 ALGORITHM = "HS256"
@@ -19,6 +20,19 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
+
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # TODO: replace with job queuing system
 jobs = queue.Queue()
 
@@ -101,17 +115,23 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/")
+async def root():
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    return {"message": timestamp}
+
 
 @app.post("/upload/")
 async def upload_files(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    # current_user: Annotated[User, Depends(get_current_active_user)],
     files: List[UploadFile],
     method: Literal['nerfacto', 'instant-ngp', 'gaussian-splatting', 'neuralangelo'] = Form(...),
-    iters: int = Form(...),
+    iters: str = Form(...),
 ):
+    print('inside fn jasjda ')
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    res = await upload_files_to_firebase_storage(files, Path('datasets', current_user.username, timestamp))
-    task = Task(current_user.username, res.get('blobPath'), method, iters)
+    res = await upload_files_to_firebase_storage(files, Path('datasets', timestamp))
+    task = Task(res.get('blobPath'), method, iters)
     # TODO: replace with job queuing system
     jobs.put(task)
     print(task)

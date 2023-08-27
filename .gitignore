@@ -162,3 +162,11 @@ cython_debug/
 .project
 .settings/
 .vscode/*
+
+ui/.dart_tools
+backend/node_modules
+.flutter-plugins*
+.dart_tool
+android
+ios
+macos

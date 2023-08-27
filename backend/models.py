@@ -24,7 +24,7 @@ class UserInDB(User):
 
 @dataclass
 class Task:
-    username: str
+    # username: str
     blobPath: Path
     method: Literal['nerfacto', 'instant-ngp', 'gaussian-splatting', 'neuralangelo']
     iters: int
