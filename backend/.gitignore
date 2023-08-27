@@ -1,0 +1,4 @@
+# virtualenv
+env/
+# Firebase credentials
+credentials.json
