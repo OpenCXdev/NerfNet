@@ -1,6 +1,6 @@
 # Worker
 
-Wrapper around CognitiveStudio API.
+Wrapper around CognitiveStudio CLI.
 
 ## Usage
 
