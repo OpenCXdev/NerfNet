@@ -12,25 +12,106 @@ File structure:
         ...
     |__ nerfs
         |__ nerf0    # Some unique nerf name.
-            ...    # Output of ns-train
+            ...    # Selected files from output of ns-train
     |__ status.json    # Metadata or status.
 |__ dataset0.tar.gz    # Created on demand.
+|__ dataset0.nerf0    # ns-train working directory.
+    ...    # Output of ns-train
 ...
 
 Each individual dataset (e.g. `run0`) is stored in our database as a `tar.gz`.
+
+The workflow on our backend server is:
+- Receive request to do something
+- Pull existing dataset from database
+- Unpack dataset tarball
+- Do something
+- Repack dataset tarball
+- Push dataset to database
 """
 
-import cv2
 import json
+import shutil
+from dataclasses import dataclass
 from pathlib import Path
 from subprocess import check_call
+from typing import Generator
+
+import cv2
 
 STANDARD_RES = 400
 TMP_DIR = Path("/tmp/NerfNetWorker")
 
 
+@dataclass
+class RunConfig:
+    """
+    Configuration for a run request.
+    """
+    method: str
+    """Method to use for training (e.g. nerfacto)."""
+    iters: int = 10000
+    """Number of iterations to train for."""
+
+
+class NerfRun:
+    """
+    This class represents one nerf run; e.g. `nerf0`.
+
+    Each NerfRun can only have one actual ns-train run;
+    if you do multiple, the previous one will be overwritten.
+
+    For multiple runs, create multiple NerfRuns.
+
+    See file structure above.
+    """
+    parent: "Dataset"
+
+    def __init__(self, id: str, parent: "Dataset", config: RunConfig):
+        self.id = id
+        self.parent = parent
+        self.config = config
+
+        self.ds_path = parent.path / "nerfs" / id
+        """Path inside the dataset"""
+        self.tmp_path = parent.tmpdir / f"{parent.id}.{id}"
+        """Path inside the tmpdir"""
+
+        self.ds_path.mkdir(parents=True, exist_ok=True)
+        self.tmp_path.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def results_path(self) -> Path:
+        return self.tmp_path / "outputs" / "NerfNetWorker" / self.config.method / "0"
+
+    def run(self):
+        check_call([
+            "ns-train",
+            self.config.method,
+            "--experiment-name", "NerfNetWorker",
+            "--timestamp", "0",
+            "--max-num-iterations", str(self.config.iters),
+            "--vis", "tensorboard",
+            "nerfstudio-data", "--data", self.parent.colmap_data_path.absolute(),
+        ], cwd=self.tmp_path)
+
+    def copy_tmp_to_ds(self):
+        """
+        Copy from tmp working dir (e.g. `dataset0.nerf0/*`)
+        to dataset (e.g. `dataset0/nerfs/nerf0`).
+        Also serializes RunConfig.
+        """
+        ns_config = self.results_path / "config.yml"
+        model = next((self.results_path / "nerfstudio_models").iterdir())
+        shutil.copy(ns_config, self.ds_path / "ns_config.yml")
+        shutil.copy(model, self.ds_path / "model.ckpt")
+        (self.ds_path / "config.json").write_text(json.dumps(self.config.__dict__, indent=4))
+
+
 class Dataset:
     """
+    This class represents one dataset; e.g. `dataset0`.
+
     See file structure above.
 
     This class doesn't guarantee that data exists;
@@ -49,19 +130,22 @@ class Dataset:
         self.path.mkdir(parents=True, exist_ok=True)
 
     @property
-    def raw_data_path(self):
+    def raw_data_path(self) -> Path:
         return self.path / "raw_data"
 
     @property
-    def colmap_data_path(self):
+    def colmap_data_path(self) -> Path:
         return self.path / "colmap_data"
 
     @property
-    def nerfs_path(self):
-        return self.path / "nerfs"
+    def runs_path(self) -> Path:
+        return self.path / "runs"
 
-    def iter_nerfs(self):
-        yield from self.nerfs_path.iterdir()
+    def iter_run_paths(self) -> Generator[Path, None, None]:
+        yield from self.runs_path.iterdir()
+
+    def get_run(self, id: str, config: RunConfig) -> NerfRun:
+        return NerfRun(id, self, config)
 
     def read_status(self):
         return json.loads((self.path / "status.json").read_text())
