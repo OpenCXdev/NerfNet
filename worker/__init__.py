@@ -1,3 +1,0 @@
-"""
-Wrapper around CognitiveStudio CLI.
-"""
