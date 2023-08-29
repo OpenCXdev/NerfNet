@@ -224,3 +224,14 @@ class Dataset:
         assert tar_path.exists()
 
         return tar_path
+
+    def unpack_tar(self, tarball: Path):
+        """
+        Unpack tarball into this dataset.
+        """
+        check_call([
+            "tar",
+            "-xzf",
+            tarball,
+        ], cwd=self.tmpdir)
+        assert self.path.exists()
